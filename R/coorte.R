@@ -28,12 +28,30 @@ teste_tdm <- coorte_teste_md
 
 teste_tdm <- teste_tdm |>
     mutate(
-        tdm = if_else(
+        epdep_22 = if_else(
             l063 == 1 | l064 == 1,
             if_else(
-                l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 > 3,
+                l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 >= 3,
                 1, 0
             ), 0
+        )
+    )
+
+teste_tdm <- teste_tdm |>
+    mutate(
+        epdep_22 = if_else(
+            if_else(
+            l063 == 1 | l064 == 1,
+            if_else (
+                l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 >= 4,
+                1, 0
+            ), if_else(
+                l063 == 1 & l064 == 1,
+                if_else (
+                    l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 >= 3,
+                    1, 0
+                ), 0
+            )
         )
     )
 
