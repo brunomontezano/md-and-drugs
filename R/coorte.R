@@ -18,14 +18,6 @@ coorte_teste_md <- coorte_teste |>
         any_of(vars)
     )
 
-#Criando coluna para diagnóstico dos TH
-
-coorte_teste_md <- coorte_teste_md |>
-    mutate(
-        tdm = 0,
-        tb = 0
-    )
-
 #Diagnóstico de TDM
 
 #Major Depressive Disorder is characterized by one or more Major Depressive Episodes
@@ -34,12 +26,17 @@ coorte_teste_md <- coorte_teste_md |>
 
 teste_tdm <- coorte_teste_md
 
-teste_tdm %>%
-    if(l063 == 1 | l064 == 1) {
-        tdm <- 1
-    } else {
-        tdm <- 0
-    }
+teste_tdm <- teste_tdm |>
+    mutate(
+        tdm = if_else(
+            l063 == 1 | l064 == 1,
+            if_else(
+                l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 > 3,
+                1, 0
+            ), 0
+        )
+    )
+
 
 #Diagnóstico de Transtorno Bipolar I
 
@@ -50,3 +47,7 @@ teste_tdm %>%
 
 #is characterized by one or more Major Depressive Episodes
 #accompanied by at least one Hypomanic Episode.
+
+
+
+
