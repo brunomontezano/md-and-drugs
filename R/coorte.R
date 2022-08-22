@@ -26,17 +26,19 @@ coorte_teste_md <- coorte_teste |>
 #(at least 2 weeks of depressed mood or loss of interest
 #accompanied by at least four additional symptoms of depression).
 
+    #Episódio de Transtorno Depressivo Maior
+
 coorte_teste_md <- coorte_teste_md |>
     mutate(
         epdep_22 = if_else(
-            l063 == 1 | l064 == 1,
+            l063 == 1 & l064 == 1,
             if_else(
                 l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 >= 3,
                 1, 0
             ), if_else(
-                l063 == 1 & l064 == 1,
+                l063 == 1 | l064 == 1,
                 if_else (
-                    l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 >= 3,
+                    l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 >= 4,
                     1, 0
                 ), 0
             )
@@ -57,19 +59,45 @@ coorte_teste_md <- coorte_teste_md |>
             if_else(
                 l085 + l086 + l087 + l088 + l089 + l090 + l091 >= 3,
                 if_else(
-                    l093 & l094 == 0,
+                    l093 == 0 & l094 == 0,
                     1, 0), if_else(
-                        l081 == 0,
+                        l081 == 0 & l083 == 1,
                         if_else(
                             l085 + l086 + l087 + l088 + l089 + l090 + l091 >= 4,
                             if_else(
-                                l093 & l094 == 0,
+                                l093 == 0 & l094 == 0,
                                 1, 0), 0
                             )
                         )
                     )
                 )
             )
+
+coorte_teste_md <- coorte_teste_md |>
+    mutate(
+        ephip_at_22 = if_else(
+            (l081 == 1 | l083 == 1) & (l082 == 1 | l084 == 1),
+            if_else(
+                l085 + l086 + l087 + l088 + l089 + l090 + l091 >= 3,
+                if_else(
+                    l093 & l094 == 0,
+                    1, 0), if_else(
+                        l081 == 0 & l083 == 1,
+                        if_else(
+                            l085 + l086 + l087 + l088 + l089 + l090 + l091 >= 4,
+                            if_else(
+                                l093 & l094 == 0,
+                                1, 0), 0
+                        )
+                    )
+            )
+        )
+    )
+
+coorte_teste_md <- coorte_teste_md |>
+    mutate(
+        ephip_mg_22 = if_else(
+            (l081 == 1 | l083 == 1) & (l082 == 0 & l084 == 0),
         )
     )
 
