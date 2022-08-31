@@ -316,7 +316,7 @@ coorte_teste_md_22 <- coorte_teste_md |>
 # Disorder, Delusional Disorder, or Psychotic Disorder Not Otherwise
 # Specified.
 
-coorte_teste_md <- coorte_teste_md |>
+coorte_teste_md_22 <- coorte_teste_md_22 |>
     mutate(
         diagbd1_22 = if_else(
             (epman_at_18 == 1 | epman_pa_18 == 1),
@@ -326,7 +326,7 @@ coorte_teste_md <- coorte_teste_md |>
             ))
     )
 
-mania_18 == 1 | (hipo_18 == 1 & dep_18 == 1)
+# mania_18 == 1 | (hipo_18 == 1 & dep_18 == 1)
 
 # Bipolar II Disorder Diagnosis
 
@@ -351,11 +351,12 @@ mania_18 == 1 | (hipo_18 == 1 & dep_18 == 1)
 # E. The symptoms cause clinically significant distress or impairment in
 # social, occupational, or other important areas of functioning.
 
-coorte_teste_md <- coorte_teste_md |>
+tem que ter caso de tdm e hipo mas nao de mania
+
+coorte_teste_md_22 <- coorte_teste_md_22 |>
     mutate(
         diagbd2_22 = if_else(
-            (ephip_at_18 == 1 | ephip_pa_18 == 1) &
-                (eptdm_18 == 1) &
-                (epman_at_18 == 0 & epman_pa_18 == 0),
-            1, 0)
-    )
+            ((eptdm_18 == 1 & ephip_at_22 == 1) | (eptdm_22 == 1 & ephip_at_18 == 1) |
+                (eptdm_18 == 1 & ephip_pa_22 == 1) | (eptdm_22 == 1 & ephip_pa_18 == 1)) &
+                (epman_pa_18 == 0 & epman_at_18 == 0 & epman_pa_22 == 0 & epman_at_22 == 0), 1, 0)
+        )
