@@ -13,14 +13,42 @@ vars <- c("sexonovo", "kc05", "kc06", "kc07", "kc08", "kc09",
           "l067", "l068", "l069", "l070", "l071", "l072",
           "l076", "l074", "l081", "l082", "l084", "l085",
           "l086", "l087", "l088", "l089", "l090", "l091",
-          "l092", "l093", "l094", "l083")
+          "l092", "l093", "l094", "l083", "kmini1", "kmini2",
+          "kmini3", "kmini4", "kmini5", "kmini6", "kmini7",
+          "kmini8", "kmini9", "kmini19", "kmini20", "kmini21",
+          "kmini22", "kmini23", "kmini24", "kmini25", "kmini26",
+          "kmini27", "kmini28", "kmini29", "kmini30", "kmini31",
+          "kmini32")
 
 coorte_teste_md <- coorte_teste |>
     select(
         any_of(vars)
     )
 
-# Major Depressive Disorder Episode
+# Current Major Depressive Disorder Episode (18y.)
+
+coorte_teste_md <- coorte_teste_md |>
+    mutate(
+        eptdm_18 = if_else(
+            # Se A1 e A2 = "Sim"
+            kmini1 == 1 & kmini2 == 1,
+            if_else(
+                # Se há pelo menos 3 "Sim" em A3
+                kmini3 + kmini4 + kmini5 + kmini6 + kmini7 + kmini8 + kmini9 >= 3,
+                1, 0
+            ), if_else(
+                # Se A1 ou A2 = "Sim"
+                l063 == 1 | l064 == 1,
+                if_else (
+                    # Se há pelo menos 4 "Sim" em A3
+                    kmini3 + kmini4 + kmini5 + kmini6 + kmini7 + kmini8 + kmini9 >= 4,
+                    1, 0
+                ), 0
+            )
+        )
+    )
+
+# Current Major Depressive Disorder Episode (22y.)
 
 coorte_teste_md <- coorte_teste_md |>
     mutate(
@@ -29,45 +57,93 @@ coorte_teste_md <- coorte_teste_md |>
             l063 == 1 & l064 == 1,
             if_else(
 # Se há pelo menos 3 "Sim" em A3
-                l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 >= 3,
+                l065 + l066 + l067 + l068 + l069 + l070 + l071 >= 3,
                 1, 0
             ), if_else(
 # Se A1 ou A2 = "Sim"
                 l063 == 1 | l064 == 1,
                 if_else (
 # Se há pelo menos 4 "Sim" em A3
-                    l065 + l066 + l067 + l068 + l069 + l070 + l071 + l072 + l074 >= 4,
+                    l065 + l066 + l067 + l068 + l069 + l070 + l071 >= 4,
                     1, 0
                 ), 0
             )
         )
     )
 
-# Past Maniac Episode
+# Past Maniac Episode (18y.)
+
+coorte_teste_md <- coorte_teste_md |>
+    mutate(epman_pa_18 = if_else(
+        # Se D1a ou D2a = "Sim" e ausência de sintomatologia atual
+        (kmini19 == 1 | kmini21 == 1) & (kmini20 == 0 & kmini22 == 0),
+        if_else(
+            # Se D1a = "Sim"
+            kmini19 == 1,
+            if_else(
+                # Se há pelo menos 3 "Sim" em D3 como D1a = "Sim"
+                kmini23 + kmini24 + kmini25 + kmini26 + kmini27 + kmini28 + kmini29 >= 3,
+                # Se D4 é cotada como "Sim"
+                if_else((kmini30 == 1 & kmini32 >= 1) | kmini31 == 1,
+                        1, 0), 0),
+            if_else(
+                # Se há pelo menos 4 "Sim" em D3 como D1a = "Não"
+                kmini23 + kmini24 + kmini25 + kmini26 + kmini27 + kmini28 + kmini29 >= 4,
+                # Se D4 é cotada como "Sim"
+                if_else((kmini30 == 1 & kmini32 >= 1) | kmini31 == 1,
+                        1, 0), 0)
+        ), 0
+    ))
+
+# Past Maniac Episode (22y.)
 
 coorte_teste_md <- coorte_teste_md |>
     mutate(epman_pa_22 = if_else(
-# Se D1a ou D2a e ausência de sintomatologia atual
+        # Se D1a ou D2a = "Sim" e ausência de sintomatologia atual
         (l081 == 1 | l083 == 1) & (l082 == 0 & l084 == 0),
         if_else(
-# Se D1a = "Sim"
+            # Se D1a = "Sim"
             l081 == 1,
             if_else(
-# Se há pelo menos 3 "Sim" em D3 como D1a = "Sim"
+                # Se há pelo menos 3 "Sim" em D3 como D1a = "Sim"
                 l085 + l086 + l087 + l088 + l089 + l090 + l091 >= 3,
-# Se D4 é cotada como "Sim"
+                # Se D4 é cotada como "Sim"
                 if_else((l092 == 1 & l094 >= 1) | l093 == 1,
                         1, 0), 0),
             if_else(
-# Se há pelo menos 4 "Sim" em D3 como D1a = "Não"
+                # Se há pelo menos 4 "Sim" em D3 como D1a = "Não"
                 l085 + l086 + l087 + l088 + l089 + l090 + l091 >= 4,
-# Se D4 é cotada como "Sim"
+                # Se D4 é cotada como "Sim"
                 if_else((l092 == 1 & l094 >= 1) | l093 == 1,
                         1, 0), 0)
         ), 0
     ))
 
-# Episódio Maníaco Atual
+# Current Maniac Episode (18y.)
+
+coorte_teste_md <- coorte_teste_md |>
+    mutate(epman_at_18 = if_else(
+        # Se D1a ou D2a e presença de sintomatologia atual
+        (kmini19 == 1 | kmini21 == 1) & (kmini20 == 1 | kmini22 == 1),
+        if_else(
+            # Se D1a = "Sim"
+            kmini19 == 1,
+            if_else(
+                # Se há pelo menos 3 "Sim" em D3 como D1a = "Sim"
+                kmini23 + kmini24 + kmini25 + kmini26 + kmini27 + kmini28 + kmini29 >= 3,
+                # Se D4 é cotada como "Sim"
+                if_else((kmini30 == 1 & kmini32 >= 1) | kmini31 == 1,
+                        1, 0), 0),
+            if_else(
+                # Se há pelo menos 4 "Sim" em D3 como D1a = "Não"
+                kmini23 + kmini24 + kmini25 + kmini26 + kmini27 + kmini28 + kmini29 >= 4,
+                # Se D4 é cotada como "Sim"
+                if_else((kmini30 == 1 & kmini32 >= 1) | kmini31 == 1,
+                        1, 0), 0)
+        ), 0
+    ))
+
+# Current Maniac Episode (22y.)
 
 coorte_teste_md <- coorte_teste_md |>
     mutate(epman_at_22 = if_else(
@@ -91,7 +167,31 @@ coorte_teste_md <- coorte_teste_md |>
         ), 0
     ))
 
-# Past Hipomaniac Episode
+# Past Hipomaniac Episode (18y.)
+
+coorte_teste_md <- coorte_teste_md |>
+    mutate(ephip_pa_18 = if_else(
+        (kmini19 == 1 | kmini21 == 1) & (kmini20 == 0 & kmini22 == 0),
+        #Presença de D1a ou D2a e ausência de sintomatologia atual
+        if_else(
+            # Se D1a = "Sim"
+            kmini19 == 1,
+            if_else(
+                # Se há pelo menos 3 "Sim" em D3 como D1a = "Sim"
+                kmini23 + kmini24 + kmini25 + kmini26 + kmini27 + kmini28 + kmini29 >= 3,
+                # Se D4 é cotada como "Não"
+                if_else((kmini30 == 0 | kmini32 >= 0) & kmini31 == 0,
+                        1, 0), 0 ),
+            if_else(
+                # Se há pelo menos 4 "Sim" em D3 como D1a = "Não"
+                kmini23 + kmini24 + kmini25 + kmini26 + kmini27 + kmini28 + kmini29 >= 4,
+                # Se D4 é cotada como "Não"
+                if_else((kmini30 == 0 | kmini32 >= 0) & kmini31 == 0,
+                        1, 0), 0)
+        ), 0
+    ))
+
+# Past Hipomaniac Episode (22y.)
 
 coorte_teste_md <- coorte_teste_md |>
     mutate(ephip_pa_22 = if_else(
@@ -115,7 +215,30 @@ coorte_teste_md <- coorte_teste_md |>
         ), 0
     ))
 
-# Episódio Hipomaníaco Atual
+# Current Hipomaniac Episode (18y.)
+
+coorte_teste_md <- coorte_teste_md |>
+    mutate(ephip_at_18 = if_else(
+        (kmini19 == 1 | kmini21 == 1) & (kmini20 == 1 | kmini22 == 1),
+        #Presença de D1a ou D2a e presença de sintomatologia atual
+        if_else(
+            l082 == 1, # Testando se D1b = "Sim"
+            if_else(
+                # Se há pelo menos 3 "Sim" em D3 como D1a = "Sim"
+                kmini23 + kmini24 + kmini25 + kmini26 + kmini27 + kmini28 + kmini29 >= 3,
+                # Se D4 é cotada como "Não"
+                if_else((kmini30 == 0 | kmini32 >= 0) & kmini31 == 0,
+                        1, 0), 0),
+            if_else(
+                # Se há pelo menos 4 "Sim" em D3 como D1a = "Não"
+                kmini23 + kmini24 + kmini25 + kmini26 + kmini27 + kmini28 + kmini29 >= 4,
+                # Se D4 é cotada como "Sim"
+                if_else((kmini30 == 0 | kmini32 >= 0) & kmini31 == 0,
+                        0, 1), 0)
+        ), 0
+    ))
+
+# Current Hipomaniac Episode (22y.)
 
 coorte_teste_md <- coorte_teste_md |>
     mutate(ephip_at_22 = if_else(
@@ -163,6 +286,19 @@ coorte_teste_md <- coorte_teste_md |>
             1, 0)
         )
 
+# Excluding people with BD1 or BD2 at 18 years old
+
+coorte_teste_md <- coorte_teste_md |>
+    mutate(
+        diagtb12 = if_else(
+            (epman_pa_18 == 1 | epman_at_18 == 1) | ((ephip_pa_18 == 1 | ephip_at_18 == 1) &
+                                                         eptdm_18 == 1), 1, 0)
+        )
+
+coorte_teste_md_22 <- coorte_teste_md |>
+    filter(
+        coorte_teste_md$diagtb12 == 0
+    )
 
 # Bipolar I Disorder Diagnosis
 
@@ -183,9 +319,14 @@ coorte_teste_md <- coorte_teste_md |>
 coorte_teste_md <- coorte_teste_md |>
     mutate(
         diagbd1_22 = if_else(
-            epman_at_22 == 1 | epman_pa_22 == 1,
-            1, 0)
-        )
+            (epman_at_18 == 1 | epman_pa_18 == 1),
+            0, if_else(
+                (epman_at_22 == 1 | epman_pa_22 == 1),
+                1, 0)
+            ))
+    )
+
+mania_18 == 1 | (hipo_18 == 1 & dep_18 == 1)
 
 # Bipolar II Disorder Diagnosis
 
@@ -213,8 +354,8 @@ coorte_teste_md <- coorte_teste_md |>
 coorte_teste_md <- coorte_teste_md |>
     mutate(
         diagbd2_22 = if_else(
-            (ephip_at_22 == 1 | ephip_pa_22 == 1) &
-                (eptdm_22 == 1) &
-                (epman_at_22 == 0 & epman_pa_22 == 0),
+            (ephip_at_18 == 1 | ephip_pa_18 == 1) &
+                (eptdm_18 == 1) &
+                (epman_at_18 == 0 & epman_pa_18 == 0),
             1, 0)
     )
