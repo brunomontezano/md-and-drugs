@@ -297,7 +297,7 @@ coorte_teste_md <- coorte_teste_md |>
 
 coorte_teste_md_22 <- coorte_teste_md |>
     filter(
-        coorte_teste_md$diagtb12 == 0
+        diagtb12 == 0
     )
 
 # Bipolar I Disorder Diagnosis
