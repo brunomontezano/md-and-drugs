@@ -5,6 +5,9 @@ library(haven)
 
 coorte_teste <- read_sav("data/banco_QI_15_07.sav")
 
+coorte_teste |>
+    dplyr::filter(!is.na(l063))
+
 # Selecting variables
 
 vars <- c("sexonovo", "kc05", "kc06", "kc07", "kc08", "kc09",
