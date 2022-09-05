@@ -3,7 +3,7 @@ library(haven)
 
 #Carregando dados
 
-coorte_teste <- read_sav(file.choose())
+coorte_teste <- read_sav("data/banco_QI_15_07.sav")
 
 # Selecting variables
 
@@ -324,7 +324,6 @@ coorte_teste_md_22 <- coorte_teste_md_22 |>
                 (epman_at_22 == 1 | epman_pa_22 == 1),
                 1, 0)
             ))
-    )
 
 # mania_18 == 1 | (hipo_18 == 1 & dep_18 == 1)
 
@@ -351,7 +350,18 @@ coorte_teste_md_22 <- coorte_teste_md_22 |>
 # E. The symptoms cause clinically significant distress or impairment in
 # social, occupational, or other important areas of functioning.
 
-tem que ter caso de tdm e hipo mas nao de mania
+# tem que ter caso de tdm e hipo mas nao de mania
+
+## PARA VERIFICAR NA BASE JÁ FILTRADA O DIAGNÓSTICO DE BD (tanto 1 quanto 2):
+## Neste código, podemos fazer algo do tipo
+## SE (MANIA_22 == 1 | ((HIPO_18 == 1 OU HIPO_22 == 1) E (EPDEP_22 == 1 OU EPDEP_18 == 1))), SIM
+## Assim acima daria certo pois como tu filtrou lá em cima a base,
+## Não teria o risco de alguém fechar por HIPO_18 == 1 E EPDEP_18 == 1,
+## essa pessoa já teria caído fora
+## Se quisesse pegar apenas BD2, seria tirar essa primeira parte de MANIA_22 == 1
+
+## Tem que ser checado alguns NA que podem estar atrapalhando
+## a lógica das tuas condicionais.
 
 coorte_teste_md_22 <- coorte_teste_md_22 |>
     mutate(
