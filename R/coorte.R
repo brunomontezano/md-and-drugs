@@ -80,7 +80,8 @@ da <- da |>
 # Past Maniac Episode (18y.)
 
 da <- da |>
-    dplyr::mutate(epman_pa_18 = dplyr::if_else(
+    dplyr::mutate(
+        epman_pa_18 = dplyr::if_else(
         # Se D1a ou D2a = "Sim" e ausência de sintomatologia atual
         (kmini19 == 1 | kmini21 == 1) & (kmini20 == 0 & kmini22 == 0),
         dplyr::if_else(
@@ -101,12 +102,14 @@ da <- da |>
                         1, 0), 0)
         ), 0,
         missing = 0
-    ))
+    )
+    )
 
 # Past Maniac Episode (22y.)
 
 da <- da |>
-    dplyr::mutate(epman_pa_22 = dplyr::if_else(
+    dplyr::mutate(
+        epman_pa_22 = dplyr::if_else(
         # Se D1a ou D2a = "Sim" e ausência de sintomatologia atual
         (l081 == 1 | l083 == 1) & (l082 == 0 & l084 == 0),
         dplyr::if_else(
@@ -126,12 +129,14 @@ da <- da |>
                         1, 0, missing = 0), 0, missing = 0)
         ), 0,
                 missing = 0
-    ))
+    )
+    )
 
 # Current Maniac Episode (18y.)
 
 da <- da |>
-    dplyr::mutate(epman_at_18 = dplyr::if_else(
+    dplyr::mutate(
+        epman_at_18 = dplyr::if_else(
         # Se D1a ou D2a e presença de sintomatologia atual
         (kmini19 == 1 | kmini21 == 1) & (kmini20 == 1 | kmini22 == 1),
         dplyr::if_else(
@@ -151,12 +156,14 @@ da <- da |>
                         1, 0, missing = 0), 0, missing = 0)
         ), 0,
                 missing = 0
-    ))
+    )
+    )
 
 # Current Maniac Episode (22y.)
 
 da <- da |>
-    dplyr::mutate(epman_at_22 = dplyr::if_else(
+    dplyr::mutate(
+        epman_at_22 = dplyr::if_else(
         # Se D1a ou D2a e presença de sintomatologia atual
         (l081 == 1 | l083 == 1) & (l082 == 1 | l084 == 1),
         dplyr::if_else(
@@ -176,12 +183,14 @@ da <- da |>
                         1, 0, missing = 0), 0, missing = 0)
         ), 0,
                 missing = 0
-    ))
+    )
+    )
 
 # Past Hipomaniac Episode (18y.)
 
 da <- da |>
-    dplyr::mutate(ephip_pa_18 = dplyr::if_else(
+    dplyr::mutate(
+        ephip_pa_18 = dplyr::if_else(
         (kmini19 == 1 | kmini21 == 1) & (kmini20 == 0 & kmini22 == 0),
         # Presença de D1a ou D2a e ausência de sintomatologia atual
         dplyr::if_else(
@@ -201,12 +210,14 @@ da <- da |>
                         1, 0, missing = 0), 0, missing = 0)
         ), 0,
                 missing = 0
-    ))
+    )
+    )
 
 # Past Hipomaniac Episode (22y.)
 
 da <- da |>
-    dplyr::mutate(ephip_pa_22 = dplyr::if_else(
+    dplyr::mutate(
+        ephip_pa_22 = dplyr::if_else(
         (l081 == 1 | l083 == 1) & (l082 == 0 & l084 == 0),
         # Presença de D1a ou D2a e ausência de sintomatologia atual
         dplyr::if_else(
@@ -226,12 +237,14 @@ da <- da |>
                         1, 0, missing = 0), 0, missing = 0)
         ), 0,
         missing = 0
-    ))
+    )
+    )
 
 # Current Hipomaniac Episode (18y.)
 
 da <- da |>
-    dplyr::mutate(ephip_at_18 = dplyr::if_else(
+    dplyr::mutate(
+        ephip_at_18 = dplyr::if_else(
         (kmini19 == 1 | kmini21 == 1) & (kmini20 == 1 | kmini22 == 1),
         # Presença de D1a ou D2a e presença de sintomatologia atual
         dplyr::if_else(
@@ -250,12 +263,14 @@ da <- da |>
                         0, 1), 0, missing = 0)
         ), 0,
         missing = 0
-    ))
+    )
+    )
 
 # Current Hipomaniac Episode (22y.)
 
 da <- da |>
-    dplyr::mutate(ephip_at_22 = dplyr::if_else(
+    dplyr::mutate(
+        ephip_at_22 = dplyr::if_else(
         (l081 == 1 | l083 == 1) & (l082 == 1 | l084 == 1),
         # Presença de D1a ou D2a e presença de sintomatologia atual
         dplyr::if_else(
@@ -274,7 +289,8 @@ da <- da |>
                         0, 1), 0, missing = 0)
             ), 0,
         missing = 0
-    ))
+    )
+    )
 
 # Depressive Disorder Episode Diagnosis
 
