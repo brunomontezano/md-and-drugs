@@ -9,6 +9,16 @@ dados <- haven::read_sav("data/banco_QI_15_07.sav")
 # Sexo, variáveis relacionadas ao uso de substâncias ao longo da vida,
 # variáveis para diagnóstico de episódios de humor aos 18 e aos 22 anos
 variaveis <- c(
+    "ld023a",
+    # Estado civil (aos 22 anos)
+    "labep3",
+    # Status socioeconômico em 3 categorias da ABEP (22 anos)
+    "ld011",
+    # Trabalha atualmente (22 anos)
+    "kconspsiq",
+    # Consulta com psiquiatra no último ano
+    "kconspsic",
+    # Consulta com psicólogo no último ano
     "sexonovo",
     # Sexo do recém-nascido (arrumada em agosto de 2015)
     "kc05",
@@ -499,7 +509,7 @@ dados_com_diagnostico <- dados_sem_tb_aos_18 |>
         ), ref = "No"),
         # "No" como categoria de referência para regressão
         # Recodificar as variáveis de substâncias para dicotômica
-        dplyr::across(dplyr::starts_with("kc"),
+        dplyr::across(dplyr::matches("^kc[0-9]*$"),
                       \(x) as.factor(
                           dplyr::case_when(
                               x %in% 1:5 ~ "Yes",
@@ -514,10 +524,44 @@ dados_com_diagnostico <- dados_sem_tb_aos_18 |>
                 sexonovo == 2 ~ "Female",
                 TRUE ~ NA_character_
             )
+        ),
+        ld023a = as.factor(
+            dplyr::case_when(
+                ld023a == 1 ~ "Married or stable union",
+                ld023a == 2 ~ "Divorced or separated",
+                ld023a == 3 ~ "Single",
+                ld023a == 4 ~ "Widow",
+                TRUE ~ as.character(ld023a)
+            )
+        ),
+        consultou_psi = as.factor(
+            dplyr::case_when(
+                kconspsic == 1 | kconspsiq == 1 ~ "Yes",
+                kconspsic == 0 | kconspsiq == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        labep3 = as.factor(
+            dplyr::case_when(
+                labep3 == 1 ~ "Upper",
+                labep3 == 2 ~ "Middle",
+                labep3 == 3 ~ "Lower",
+                TRUE ~ NA_character_
+            )
+        ),
+        ld011 = as.factor(
+            dplyr::case_when(
+                ld011 == 1 ~ "Yes",
+                ld011 == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
         )
     ) |>
     # Remove variáveis dos episódios e do TB aos 18 anos
-    dplyr::select(-dplyr::matches("^ep.*$"), -tb_aos_18) |>
+    dplyr::select(-dplyr::matches("^ep.*$"),
+                  -tb_aos_18,
+                  -dplyr::starts_with("kcons")
+                  ) |>
     # Renomear algumas variáveis
     dplyr::rename(
         maconha = kc05,
@@ -533,7 +577,10 @@ dados_com_diagnostico <- dados_sem_tb_aos_18 |>
         lsd = kc15,
         cola = kc16,
         outra_droga = kc17,
-        sexo = sexonovo
+        sexo = sexonovo,
+        estado_civil_22 = ld023a,
+        status_socioec_22 = labep3,
+        trabalha_atual_22 = ld011
     )
 
 ##### EXPORTAR DADOS LIMPOS #####
