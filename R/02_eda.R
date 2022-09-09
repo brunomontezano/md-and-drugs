@@ -37,11 +37,6 @@ dados_limpos |>
 dados_limpos |>
     contar_tb_estratificado("maconha")
 
-# Isso pode ser feito para as outras variáveis
-dados_limpos |>
-    dplyr::select(-c(bd1_22, bd2_22)) |>
-    purrr::map(contar_tb_estratificado)
-
 ##### DATA VIS ######
 
 set.seed(123)
