@@ -483,7 +483,7 @@ dados_com_diagnostico <- dados_sem_tb_aos_18 |>
                            missing = "No")
         ),
         # Transtorno bipolar tipo II aos 22 anos
-        bd2_22 = as.factor(dplyr::if_else((bd1_22 == 0) &
+        bd2_22 = as.factor(dplyr::if_else((bd1_22 == "No") &
                                               ((eptdm_18 == 1 |
                                                     eptdm_22 == 1) &
                                                    (
@@ -541,3 +541,4 @@ dados_com_diagnostico <- dados_sem_tb_aos_18 |>
 readr::write_rds(x = dados_com_diagnostico,
                  file = "data/clean_data.rds",
                  compress = "none")
+
