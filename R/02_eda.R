@@ -13,13 +13,34 @@ dados_limpos |>
 dados_limpos |>
     dplyr::count(bd_any)
 
+# Criar função para checar incidência de TB estratificado por alguma variável
+contar_tb_estratificado <- function(dados, variavel) {
+    dados |>
+        dplyr::filter(!is.na(.data[[variavel]])) |>
+        dplyr::group_by(.data[[variavel]]) |>
+        dplyr::count(.data[["bd_any"]])
+}
+
+##### VALORES AUSENTES #####
+
+# Checar quantidade de missings em cada variável através de visualização
+DataExplorer::plot_missing(dados_limpos)
+
+# Mesma coisa em texto
+dados_limpos |>
+    purrr::map_chr(\(x) stringr::str_c(as.character(mean(is.na(
+        x
+    )) * 100), "%"))
+
 # Checar incidência de transtorno bipolar agrupada pela variável de uso
 # de maconha
 dados_limpos |>
-    dplyr::filter(!is.na(maconha)) |>
-    dplyr::group_by(maconha) |>
-    dplyr::count(bd_any)
+    contar_tb_estratificado("maconha")
 
+# Isso pode ser feito para as outras variáveis
+dados_limpos |>
+    dplyr::select(-c(bd1_22, bd2_22)) |>
+    purrr::map(contar_tb_estratificado)
 
 ##### DATA VIS ######
 
@@ -29,9 +50,7 @@ pval_maconha <- chisq.test(x = dados_limpos$maconha,
                            correct = TRUE)$p.value
 
 dados_limpos |>
-    dplyr::filter(!is.na(maconha)) |>
-    dplyr::group_by(maconha) |>
-    dplyr::count(bd_any) |>
+    contar_tb_estratificado("maconha") |>
     dplyr::mutate(pct = n/sum(n)) |>
     ggplot2::ggplot(ggplot2::aes(fill = bd_any, x = maconha, y = n)) +
     ggplot2::geom_bar(stat = "identity", position = "fill") +
