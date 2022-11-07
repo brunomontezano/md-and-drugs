@@ -9,12 +9,28 @@ dados <- haven::read_sav("data/banco_QI_15_07.sav")
 # Sexo, variáveis relacionadas ao uso de substâncias ao longo da vida,
 # variáveis para diagnóstico de episódios de humor aos 18 e aos 22 anos
 variaveis <- c(
+    "hc07",
+    # Já tomou bebida de álcool? (11 anos)
+    "hc13",
+    # Já apanhou dos pais? (11 anos)
+    "hc06m",
+    # Já usou maconha (11 anos de idade)
+    "jc11d",
+    # Já usou maconha (15 anos de idade)
     "ld023a",
     # Estado civil (aos 22 anos)
     "labep3",
     # Status socioeconômico em 3 categorias da ABEP (22 anos)
+    "jrenfam",
+    # Renda familiar em reais (aos 15 anos)
     "ld011",
     # Trabalha atualmente (22 anos)
+    "jcorpel5",
+    # Cor da pele (15 anos)
+    "aidadmae",
+    # Idade materna
+    "aidadpai",
+    # Idade paterna
     "kconspsiq",
     # Consulta com psiquiatra no último ano
     "kconspsic",
@@ -482,6 +498,18 @@ dados_sem_tb_aos_18 <-
     dplyr::filter(tb_aos_18 == 0) |>  # Manter sujeitos que não fecharam TB aos 18 anos
     dplyr::select(-dplyr::matches("^(km|l0).*$")) # Remover variáveis da MINI
 
+dados_sem_th <-
+    dados_avaliados_aos_22 |>
+    dplyr::mutate(
+        sem_th = dplyr::case_when(
+            (eptdm_18 == 0 | is.na(eptdm_18)) &
+                (epman_pa_18 == 0 | is.na(epman_pa_18)) &
+                epman_at_18 == 0 ~ "Sem",
+            TRUE ~ "Com"
+        )
+    ) |>
+    dplyr::filter(sem_th == "Sem")
+
 ##### CRIAR DIAGNÓSTICOS DE TRANSTORNO BIPOLAR AOS 22 ANOS #####
 
 dados_com_diagnostico <- dados_sem_tb_aos_18 |>
@@ -555,6 +583,56 @@ dados_com_diagnostico <- dados_sem_tb_aos_18 |>
                 ld011 == 0 ~ "No",
                 TRUE ~ NA_character_
             )
+        ),
+        hc06m = as.factor(
+            dplyr::case_when(
+                hc06m == 1 ~ "Yes",
+                hc06m == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        jc11d = as.factor(
+            dplyr::case_when(
+                jc11d == 1 ~ "Yes",
+                jc11d == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        jcorpel5 = as.factor(
+            dplyr::case_when(
+                jcorpel5 %in% 2:5 ~ "Non-white",
+                jcorpel5 == 1 ~ "White",
+                TRUE ~ NA_character_
+            )
+        ),
+        hc13 = as.factor(
+            dplyr::case_when(
+                hc13 == 1 ~ "Yes",
+                hc13 == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        hc07 = as.factor(
+            dplyr::case_when(
+                hc07 == 1 ~ "Yes",
+                hc07 == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        jrenfam = jrenfam / 1000,
+        pais_acima_40 = as.factor(
+            dplyr::if_else(
+                aidadmae > 40 & aidadpai > 40, "Yes",
+                "No", NA_character_
+            )
+        ),
+        alcool_11ou15 = as.factor(
+            dplyr::case_when(
+                hc06m == "Yes" | jc11d == "Yes" ~ "Yes",
+                hc06m == "No" & (is.na(jc11d) | jc11d == "No") ~ "No",
+                jc11d == "No" & (is.na(hc06m) | hc06m == "No") ~ "No",
+                TRUE ~ NA_character_
+            )
         )
     ) |>
     # Remove variáveis dos episódios e do TB aos 18 anos
@@ -564,6 +642,10 @@ dados_com_diagnostico <- dados_sem_tb_aos_18 |>
                   ) |>
     # Renomear algumas variáveis
     dplyr::rename(
+        alcool_11 = hc07,
+        ja_apanhou = hc13,
+        maconha_11 = hc06m,
+        maconha_15 = jc11d,
         maconha = kc05,
         cocaina = kc06,
         comp_dormir = kc07,
@@ -580,12 +662,161 @@ dados_com_diagnostico <- dados_sem_tb_aos_18 |>
         sexo = sexonovo,
         estado_civil_22 = ld023a,
         status_socioec_22 = labep3,
-        trabalha_atual_22 = ld011
+        trabalha_atual_22 = ld011,
+        cordapele = jcorpel5,
+        renda_por_1000 = jrenfam
     )
 
 ##### EXPORTAR DADOS LIMPOS #####
 
 readr::write_rds(x = dados_com_diagnostico,
                  file = "data/clean_data.rds",
+                 compress = "none")
+
+##### CRIAR BASE PRONTA PARA PREDIÇÃO DE TRANSTORNO DE HUMOR
+dados_sem_th_diag <- dados_sem_th |>
+    dplyr::mutate(
+        # Transtorno de humor
+        transtorno_humor = as.factor(
+            dplyr::case_when(
+                eptdm_22 == 1 | epman_pa_22 == 1 | epman_at_22 == 1 ~ "Yes",
+                TRUE ~ "No"
+            )
+        ),
+        # Diagnóstico de transtorno bipolar (tipo I ou tipo II) aos 22 anos
+        transtorno_humor = relevel(transtorno_humor, ref = "No"),
+        # "No" como categoria de referência para regressão
+        # Recodificar as variáveis de substâncias para dicotômica
+        dplyr::across(dplyr::matches("^kc[0-9]*$"),
+                      \(x) as.factor(
+                          dplyr::case_when(
+                              x %in% 1:5 ~ "Yes",
+                              x == 0 ~ "No",
+                              x == 9 ~ NA_character_,
+                              TRUE ~ NA_character_
+                          )
+                      )),
+        sexonovo = as.factor(
+            dplyr::case_when(
+                sexonovo == 1 ~ "Male",
+                sexonovo == 2 ~ "Female",
+                TRUE ~ NA_character_
+            )
+        ),
+        ld023a = as.factor(
+            dplyr::case_when(
+                ld023a == 1 ~ "Married or stable union",
+                ld023a == 2 ~ "Divorced or separated",
+                ld023a == 3 ~ "Single",
+                ld023a == 4 ~ "Widow",
+                TRUE ~ as.character(ld023a)
+            )
+        ),
+        consultou_psi = as.factor(
+            dplyr::case_when(
+                kconspsic == 1 | kconspsiq == 1 ~ "Yes",
+                kconspsic == 0 | kconspsiq == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        labep3 = as.factor(
+            dplyr::case_when(
+                labep3 == 1 ~ "Upper",
+                labep3 == 2 ~ "Middle",
+                labep3 == 3 ~ "Lower",
+                TRUE ~ NA_character_
+            )
+        ),
+        ld011 = as.factor(
+            dplyr::case_when(
+                ld011 == 1 ~ "Yes",
+                ld011 == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        hc06m = as.factor(
+            dplyr::case_when(
+                hc06m == 1 ~ "Yes",
+                hc06m == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        jc11d = as.factor(
+            dplyr::case_when(
+                jc11d == 1 ~ "Yes",
+                jc11d == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        jcorpel5 = as.factor(
+            dplyr::case_when(
+                jcorpel5 %in% 2:5 ~ "Non-white",
+                jcorpel5 == 1 ~ "White",
+                TRUE ~ NA_character_
+            )
+        ),
+        hc13 = as.factor(
+            dplyr::case_when(
+                hc13 == 1 ~ "Yes",
+                hc13 == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        hc07 = as.factor(
+            dplyr::case_when(
+                hc07 == 1 ~ "Yes",
+                hc07 == 0 ~ "No",
+                TRUE ~ NA_character_
+            )
+        ),
+        jrenfam = jrenfam / 1000,
+        pais_acima_40 = as.factor(
+            dplyr::if_else(
+                aidadmae > 40 & aidadpai > 40, "Yes",
+                "No", NA_character_
+            )
+        ),
+        alcool_11ou15 = as.factor(
+            dplyr::case_when(
+                hc06m == "Yes" | jc11d == "Yes" ~ "Yes",
+                hc06m == "No" & (is.na(jc11d) | jc11d == "No") ~ "No",
+                jc11d == "No" & (is.na(hc06m) | hc06m == "No") ~ "No",
+                TRUE ~ NA_character_
+            )
+        )
+    ) |>
+    # Remove variáveis dos episódios e do TB aos 18 anos
+    dplyr::select(-dplyr::matches("^ep.*$"),
+                  -dplyr::starts_with("kcons")
+                  ) |>
+    # Renomear algumas variáveis
+    dplyr::rename(
+        alcool_11 = hc07,
+        ja_apanhou = hc13,
+        maconha_11 = hc06m,
+        maconha_15 = jc11d,
+        maconha = kc05,
+        cocaina = kc06,
+        comp_dormir = kc07,
+        comp_ligado = kc08,
+        cocaina2 = kc09,
+        lanca_perfume = kc10,
+        heroina = kc11,
+        ecstasy = kc12,
+        maconha_com_crack = kc13,
+        crack = kc14,
+        lsd = kc15,
+        cola = kc16,
+        outra_droga = kc17,
+        sexo = sexonovo,
+        estado_civil_22 = ld023a,
+        status_socioec_22 = labep3,
+        trabalha_atual_22 = ld011,
+        cordapele = jcorpel5,
+        renda_por_1000 = jrenfam
+    )
+
+readr::write_rds(x = dados_sem_th_diag,
+                 file = "data/clean_data_sem_th.rds",
                  compress = "none")
 
